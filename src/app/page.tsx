@@ -14,6 +14,7 @@ export default function Home() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [copy, setCopy] = useState(false);
   const router = useRouter();
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -113,15 +114,26 @@ export default function Home() {
                 >
                   {parts.map((part, i) =>
                     i % 2 === 1 ? (
-                      // This is a code block
-                      <pre
-                        key={i}
-                        className="bg-black  text-white p-2 rounded my-2 overflow-x-auto text-sm"
-                      >
-                        {part}
-                      </pre>
+                      // Code Block with Copy Button
+                      <div key={i} className="relative group my-2">
+                        <pre className="bg-black text-white p-4 rounded overflow-x-auto text-sm">
+                          {part}
+                        </pre>
+                        <button
+                        onMouseOut={()=>{
+                          setCopy(false);
+                        }}
+                          onClick={() => {
+                            navigator.clipboard.writeText(part);
+                            setCopy(true)
+                          }}
+                          className="absolute top-2 right-2 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity text-xs px-2 py-1 bg-gray-700 text-white rounded"
+                        >
+                         {copy ? "Copied" : "Copy"}
+                        </button>
+                      </div>
                     ) : (
-                      // This is normal text
+                      // Normal text
                       <span key={i}>{part}</span>
                     )
                   )}
