@@ -18,6 +18,48 @@ export default function Home() {
   const router = useRouter();
   const bottomRef = useRef<HTMLDivElement>(null);
 
+ const parseText = (input: string) => {
+   const patterns = [
+     { regex: /###(.*?)/g, className: "font-semibold text-xl" }, // ###Heading###
+     { regex: /\*\*(.*?)\*\*/g, className: "font-semibold" }, // **bold**
+     { regex: /_(.*?)_/g, className: "italic" }, // _italic_
+   ];
+
+   let elements: (string | JSX.Element)[] = [input];
+
+   patterns.forEach(({ regex, className }) => {
+     elements = elements.flatMap((el, idx) => {
+       if (typeof el === "string") {
+         const parts: (string | JSX.Element)[] = [];
+         let lastIndex = 0;
+         let match;
+         while ((match = regex.exec(el)) !== null) {
+           if (match.index > lastIndex) {
+             parts.push(el.slice(lastIndex, match.index));
+           }
+           parts.push(
+             <span key={`${idx}-${match.index}`} className={className}>
+               {match[1]}
+             </span>
+           );
+           lastIndex = regex.lastIndex;
+         }
+         if (lastIndex < el.length) {
+           parts.push(el.slice(lastIndex));
+         }
+         return parts;
+       }
+       return [el];
+     });
+   });
+
+   return <>{elements}</>;
+ };
+
+
+
+  
+
   useEffect(() => {
     const isSignedIn = localStorage.getItem("signed-in");
     const userId = localStorage.getItem("userId")?.replace(/"/g, "");
@@ -55,13 +97,28 @@ export default function Home() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // Add this separate one-time effect for the welcome message
+  useEffect(() => {
+    setMessages([
+      {
+        role: "assistant",
+        content:
+          "👋 Hello! How can I assist you today? You can ask me anything!",
+      },
+    ]);
+  }, []);
+
+
   const handleSend = async () => {
     if (!input.trim()) return;
     const email = localStorage.getItem("email")?.replace(/"/g, "");
     if (!email) return;
 
-    const newMsg: Message = { role: "user", content: input };
-    setMessages((prev) => [...prev, newMsg]);
+    const userMessage: Message = { role: "user", content: input };
+    const loadingPlaceholder: Message = { role: "assistant", content: "..." };
+
+    // Add user message & "typing" placeholder
+    setMessages((prev) => [...prev, userMessage, loadingPlaceholder]);
     setInput("");
     setLoading(true);
 
@@ -71,7 +128,10 @@ export default function Home() {
       body: JSON.stringify({ email, input }),
     });
 
-    if (!res.body) return;
+    if (!res.body) {
+      setLoading(false);
+      return;
+    }
 
     const reader = res.body.getReader();
     const decoder = new TextDecoder();
@@ -82,19 +142,21 @@ export default function Home() {
       if (done) break;
       const chunk = decoder.decode(value);
       assistantMsg += chunk;
+
       setMessages((prev) => {
         const updated = [...prev];
-        if (updated[updated.length - 1].role === "assistant") {
-          updated[updated.length - 1].content = assistantMsg;
-        } else {
-          updated.push({ role: "assistant", content: assistantMsg });
-        }
-        return [...updated];
+        // Always update the last assistant message
+        updated[updated.length - 1] = {
+          role: "assistant",
+          content: assistantMsg || "...",
+        };
+        return updated;
       });
     }
 
     setLoading(false);
   };
+
 
   return (
     <>
@@ -116,25 +178,27 @@ export default function Home() {
                     i % 2 === 1 ? (
                       // Code Block with Copy Button
                       <div key={i} className="relative group my-2">
-                        <pre className="bg-black text-white p-4 rounded overflow-x-auto text-sm">
+                        <div className="bg-black text-white p-4 rounded overflow-x-scroll text-sm">
                           {part}
-                        </pre>
+                        </div>
                         <button
-                        onMouseOut={()=>{
-                          setCopy(false);
-                        }}
+                          onMouseOut={() => {
+                            setCopy(false);
+                          }}
                           onClick={() => {
                             navigator.clipboard.writeText(part);
-                            setCopy(true)
+                            setCopy(true);
                           }}
                           className="absolute top-2 right-2 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity text-xs px-2 py-1 bg-gray-700 text-white rounded"
                         >
-                         {copy ? "Copied" : "Copy"}
+                          {copy ? "Copied" : "Copy"}
                         </button>
                       </div>
                     ) : (
                       // Normal text
-                      <span key={i}>{part}</span>
+                      <div key={i} className="">
+                        {parseText(part)}
+                      </div>
                     )
                   )}
                 </div>
