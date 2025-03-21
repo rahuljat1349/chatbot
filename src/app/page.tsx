@@ -99,14 +99,14 @@ export default function Home() {
   return (
     <>
       <div className=" p-6 flex w-full  flex-col justify-evenly ">
-        <div className=" w-1/2 m-auto justify-center">
+        <div className=" lg:w-1/2 m-auto justify-center">
           <div className="flex flex-col items-center element m-auto space-y-4">
             {messages.map((msg, idx) => {
               const parts = msg.content.split(/```([\s\S]*?)```/g);
               return (
                 <div
                   key={idx}
-                  className={`p-3 rounded-lg whitespace-pre-wrap ${
+                  className={`p-3 rounded-lg whitespace-pre-wrap  ${
                     msg.role === "user"
                       ? "bg-[#2F2F2F]  inline w-fit ml-auto"
                       : "mr-auto w-full"
@@ -147,7 +147,7 @@ export default function Home() {
       </div>
       <div className="pb-16">
         <div className="flex fixed  bottom-1 w-full left-0 right-0 justify-center items-center mt-6">
-          <div className="flex relative rounded-lg  bg-[#303030]  w-1/2  pl-2 justify-between items-center">
+          <div className="flex relative rounded-lg  bg-[#303030]  lg:w-1/2 w-[90%]  pl-2 justify-between items-center">
             <textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
