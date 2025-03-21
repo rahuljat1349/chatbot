@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "AceChat",
-  description: "Your Personal Wise AI Assistant",
+  description: "Your Friendly AI Assistant",
 };
 
 export default function RootLayout({
