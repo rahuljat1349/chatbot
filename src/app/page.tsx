@@ -25,12 +25,12 @@ export default function Home() {
      { regex: /_(.*?)_/g, className: "italic" }, // _italic_
    ];
 
-   let elements: (string | JSX.Element)[] = [input];
+let elements: (string | React.ReactNode)[] = [input];
 
    patterns.forEach(({ regex, className }) => {
      elements = elements.flatMap((el, idx) => {
        if (typeof el === "string") {
-         const parts: (string | JSX.Element)[] = [];
+         const parts: (string | React.ReactNode)[] = [];
          let lastIndex = 0;
          let match;
          while ((match = regex.exec(el)) !== null) {
