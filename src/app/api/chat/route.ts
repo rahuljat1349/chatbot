@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { ChatOpenAI } from "@langchain/openai";
+import { ChatMistralAI } from "@langchain/mistralai";
 import { ChatMessageHistory } from "langchain/memory";
 import { HumanMessage, AIMessage } from "@langchain/core/messages";
 import { prisma } from "@/lib/prisma";
@@ -46,9 +46,9 @@ export async function POST(req: Request) {
   memory.addMessage(new HumanMessage(input));
 
   // 3. Create streamable LLM
-  const model = new ChatOpenAI({
+  const model = new ChatMistralAI({
     streaming: true,
-    modelName: "gpt-4",
+    modelName: "mistral-large-latest",
   });
 
   const encoder = new TextEncoder();

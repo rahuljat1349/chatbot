@@ -1,0 +1,117 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  TRANSGENDER
+}
+
+enum SubmissionStatus {
+  ACCEPTED
+  REJECTED
+  PENDING
+}
+
+enum TransactionStatus {
+  ACCEPTED
+  REJECTED
+  PENDING
+}
+
+enum SubimissionPurpose {
+  DOBSubmission
+}
+
+model User {
+  id             String          @id @default(cuid())
+  name           String
+  email          String          @unique
+  QRCode         String?
+  password       String
+  fingerPrint    String?
+  role           Role            @default(USER)
+  emailVerified  DateTime?
+  balance        Int             @default(0)
+  deleted        Boolean         @default(false)
+  image          String?
+  supervisedBy   User?           @relation("SupervisorToUsers", fields: [supervisorId], references: [id])
+  supervisorId   String?
+  supervisees    User[]          @relation("SupervisorToUsers")
+  dobSubmissions DOBSubmission[] @relation("UserRelation")
+  transactions   Transaction[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@id([identifier, token])
+}
+
+model DOBSubmission {
+  id String @id @default(cuid())
+
+  firstName   String
+  middleName  String
+  lastName    String
+  gender      Gender
+  oldDOB      String
+  newDOB      String
+  mobNo       BigInt
+  aadharNo    BigInt
+  birthPlace  String
+  fathersName String
+  mothersName String
+  village     String
+  district    String
+  state       String
+  pinCode     BigInt
+  houseNo     BigInt
+  photo       String
+  sign        String
+  otherDoc    String
+  finger1     String
+  finger2     String
+  finger3     String
+  finger4     String
+  finger5     String
+  status      SubmissionStatus @default(PENDING)
+  price       Int
+  userId      String
+  user        User             @relation(fields: [userId], references: [id], name: "UserRelation")
+  slipNo      String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+}
+
+model Transaction {
+  id        String            @id @default(cuid())
+  amount    Int
+  name      String
+  status    TransactionStatus @default(PENDING)
+  userId    String
+  user      User              @relation(fields: [userId], references: [id])
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+}
+
+model Price {
+  id        String @id @default(cuid())
+  dobUpdate Int?
+}

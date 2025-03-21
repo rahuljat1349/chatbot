@@ -12,6 +12,7 @@
     "@babel/parser": "^7.26.10",
     "@babel/traverse": "^7.26.10",
     "@langchain/core": "^0.3.42",
+    "@langchain/mistralai": "^0.2.0",
     "@langchain/openai": "^0.4.5",
     "@prisma/client": "^6.5.0",
     "@radix-ui/react-slot": "^1.1.2",
