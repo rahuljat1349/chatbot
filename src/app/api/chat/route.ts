@@ -38,15 +38,18 @@ And you can also talk in hindi. And you should use emojis in a conversation to m
 
   if (!conversation) {
     conversation = await prisma.conversation.create({
-      data: { userId: user.id },
+      data: { userId: user.id, count: 0 }, 
     });
   }
+
+console.log("Conversation count:", conversation.count);
 
   // 2. Fetch previous messages
   const messages = await prisma.message.findMany({
     where: { conversationId: conversation.id },
     orderBy: { timestamp: "asc" },
   });
+console.log(messages.length);
 
   const memory = new ChatMessageHistory();
 
@@ -69,7 +72,6 @@ And you can also talk in hindi. And you should use emojis in a conversation to m
   const model = new ChatMistralAI({
     streaming: true,
     modelName: "mistral-large-latest",
-    
   });
 
   const encoder = new TextEncoder();
@@ -85,6 +87,31 @@ And you can also talk in hindi. And you should use emojis in a conversation to m
               controller.enqueue(encoder.encode(token));
             },
             async handleLLMEnd() {
+              if (!conversation.count) {
+                conversation.count = 0;
+              }
+
+              if (conversation.count > 200) {
+                const oldestTwoMessages = await prisma.message.findMany({
+                  where: { conversationId: conversation!.id },
+                  orderBy: { createdAt: "asc" }, 
+                  take: 2, 
+                });
+
+                if (oldestTwoMessages.length > 0) {
+                  await prisma.message.deleteMany({
+                    where: {
+                      id: { in: oldestTwoMessages.map((msg) => msg.id) },
+                    },
+                  });
+
+                  await prisma.conversation.update({
+                    where: { id: conversation.id },
+                    data: { count: { decrement: oldestTwoMessages.length } },
+                  });
+                }
+              }
+
               // Save user message
               await prisma.message.create({
                 data: {
@@ -101,16 +128,18 @@ And you can also talk in hindi. And you should use emojis in a conversation to m
                   content: botResponse,
                 },
               });
+              await prisma.conversation.update({
+                where: { id: conversation.id },
+                data: { count: { increment: 2 } }, 
+              });
+
               controller.close();
             },
           },
         ],
-        
-
       });
     },
   });
-  console.log(memory.getMessages())
 
   return new Response(stream, {
     headers: { "Content-Type": "text/event-stream" },

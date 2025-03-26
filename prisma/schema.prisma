@@ -10,28 +10,31 @@ datasource db {
 }
 
 model User {
-  id              Int              @id @default(autoincrement())
-  name            String?
-  email           String?          @unique
-  createdAt       DateTime         @default(now())
-  conversations   Conversation[]
+  id            Int            @id @default(autoincrement())
+  name          String?
+  email         String?        @unique
+  createdAt     DateTime       @default(now())
+  conversations Conversation[]
 }
 
 model Conversation {
-  id          Int          @id @default(autoincrement())
-  userId      Int
-  user        User         @relation(fields: [userId], references: [id])
-  createdAt   DateTime     @default(now())
-  messages    Message[]
+  id        Int       @id @default(autoincrement())
+  userId    Int
+  count     Int      @default(0)
+  user      User      @relation(fields: [userId], references: [id])
+  createdAt DateTime  @default(now())
+  messages  Message[]
 }
 
 model Message {
-  id              Int              @id @default(autoincrement())
-  conversationId  Int
-  conversation    Conversation     @relation(fields: [conversationId], references: [id])
-  sender          SenderType       // ENUM: user or bot
-  content         String
-  timestamp       DateTime         @default(now())
+  id             Int          @id @default(autoincrement())
+  conversationId Int
+  conversation   Conversation @relation(fields: [conversationId], references: [id])
+  sender         SenderType // ENUM: user or bot
+  content        String
+  timestamp      DateTime     @default(now())
+  createdAt DateTime  @default(now())
+
 }
 
 enum SenderType {
