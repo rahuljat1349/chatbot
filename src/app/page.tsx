@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { ArrowUp, MessageCircle, Copy, Check, Send } from "lucide-react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 interface Message {
   id?: number;
@@ -27,6 +28,12 @@ export default function Home() {
   const router = useRouter();
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
+  const [clearLoading, setClearLoading] = useState(false);
+  const avatarRef = useRef<HTMLDivElement>(null);
+
+  // No outside click handler: only avatar click toggles menu
 
   const parseText = (input: string) => {
     const patterns = [
@@ -123,6 +130,24 @@ export default function Home() {
     }
   }, [historyLoading]);
 
+  useEffect(() => {
+    if (!showProfileMenu) return;
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        profileMenuRef.current &&
+        !profileMenuRef.current.contains(event.target as Node) &&
+        avatarRef.current &&
+        !avatarRef.current.contains(event.target as Node)
+      ) {
+        setShowProfileMenu(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showProfileMenu]);
+
   const handleSend = async () => {
     if (!input.trim()) return;
     const email = localStorage.getItem("email")?.replace(/"/g, "");
@@ -173,6 +198,7 @@ export default function Home() {
   const handleExampleClick = (question: string) => {
     setInput(question);
     inputRef.current?.focus();
+    setTimeout(() => handleSend(), 0);
   };
 
   const copyToClipboard = async (text: string, id: string) => {
@@ -196,21 +222,30 @@ export default function Home() {
     <div className="flex items-center space-x-1">
       <span className="text-gray-400">thinking</span>
       <div className="flex space-x-1">
-        <div
-          className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce"
-          style={{ animationDelay: "0ms" }}
-        ></div>
-        <div
-          className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce"
-          style={{ animationDelay: "150ms" }}
-        ></div>
-        <div
-          className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce"
-          style={{ animationDelay: "300ms" }}
-        ></div>
+        <span className="block w-2 h-2 bg-blue-400 rounded-full dot-pulse opacity-70" />
+        <span className="block w-2 h-2 bg-blue-400 rounded-full dot-pulse-delay-1 opacity-70" />
+        <span className="block w-2 h-2 bg-blue-400 rounded-full dot-pulse-delay-2 opacity-70" />
       </div>
     </div>
   );
+
+  useEffect(() => {
+    const styleId = "dot-pulse-keyframes";
+    if (!document.getElementById(styleId)) {
+      const style = document.createElement("style");
+      style.id = styleId;
+      style.innerHTML = `
+        @keyframes dot-pulse {
+          0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+          40% { opacity: 1; transform: scale(1.2); }
+        }
+        .dot-pulse { animation: dot-pulse 1s ease-in-out 0s infinite; }
+        .dot-pulse-delay-1 { animation: dot-pulse 1s ease-in-out 0.2s infinite; }
+        .dot-pulse-delay-2 { animation: dot-pulse 1s ease-in-out 0.4s infinite; }
+      `;
+      document.head.appendChild(style);
+    }
+  }, []);
 
   return (
     <div className="flex flex-col h-screen bg-gray-900 text-white">
@@ -225,134 +260,248 @@ export default function Home() {
             <p className="text-xs text-gray-400">Rahul's AI Assistant</p>
           </div>
         </div>
+        <div className="flex items-center space-x-2 relative">
+          {/* Profile Avatar with Initial (clickable) */}
+          <div
+            ref={avatarRef}
+            className="w-8 h-8 rounded-full border-2 border-blue-500 bg-blue-600 flex items-center justify-center text-white font-bold text-base select-none shadow-md cursor-pointer"
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowProfileMenu((v) => !v);
+            }}
+            title="Profile menu"
+          >
+            {(() => {
+              let initial = "U";
+              try {
+                const emailRaw = localStorage.getItem("email");
+                if (emailRaw) {
+                  const email = JSON.parse(emailRaw);
+                  if (typeof email === "string" && email.length > 0) {
+                    initial = email.charAt(0).toUpperCase();
+                  }
+                }
+              } catch {
+                initial = "U";
+              }
+              return initial;
+            })()}
+          </div>
+          {/* Profile Dropdown Menu */}
+          {showProfileMenu && (
+            <div
+              ref={profileMenuRef}
+              className="absolute right-0 top-12 w-56 bg-gray-800 border border-gray-700 rounded-xl shadow-lg py-3 px-4 z-50 flex flex-col items-start animate-fade-in"
+              onMouseDown={(e) => e.stopPropagation()}
+            >
+              <div className="w-full mb-2 text-xs text-gray-400 truncate">
+                {(() => {
+                  let email = "Unknown";
+                  try {
+                    const emailRaw = localStorage.getItem("email");
+                    if (emailRaw) {
+                      const parsed = JSON.parse(emailRaw);
+                      if (typeof parsed === "string") email = parsed;
+                    }
+                  } catch {}
+                  return email;
+                })()}
+              </div>
+              <button
+                onClick={async () => {
+                  setClearLoading(true);
+                  const userId = localStorage
+                    .getItem("userId")
+                    ?.replace(/"/g, "");
+                  if (!userId) {
+                    setClearLoading(false);
+                    return;
+                  }
+                  await fetch("/api/history", {
+                    method: "DELETE",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ userId }),
+                  });
+                  setMessages([
+                    {
+                      role: "assistant",
+                      content:
+                        "Hello! I'm AceChat, Rahul's AI assistant. How can I help you today?",
+                    },
+                  ]);
+                  setShowExamples(true);
+                  setClearLoading(false);
+                }}
+                className="text-left px-3 py-1.5 rounded-lg bg-gray-700 hover:bg-gray-600 text-xs text-gray-200 border border-gray-600 transition-all mb-2 flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                title="Clear chat history"
+                disabled={clearLoading}
+              >
+                {clearLoading ? (
+                  <span className="w-4 h-4 border-2 border-blue-400 border-t-transparent rounded-full animate-spin inline-block" />
+                ) : null}
+                {clearLoading ? "Clearing..." : "Clear Chat"}
+              </button>
+              <button
+                onClick={() => {
+                  setShowProfileMenu(false);
+                  localStorage.clear();
+                  window.location.href = "/signin";
+                }}
+                className="text-left px-3 py-1.5 rounded-lg bg-gray-700 hover:bg-gray-600 text-xs text-gray-200 border border-gray-600 transition-all"
+                title="Logout"
+              >
+                Logout
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Chat Messages */}
-      <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900">
-        <div className="max-w-4xl mx-auto px-4 py-4 space-y-4">
-          {historyLoading ? (
-            <div className="flex items-center justify-center h-full">
-              <div className="text-center">
-                <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-                <p className="text-gray-400 text-sm">Initializing...</p>
+      <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900 pt-16 pb-40 relative">
+        {/* Fade-out gradient at bottom */}
+        <div
+          className="pointer-events-none absolute left-0 bottom-0 w-full h-24 z-10"
+          style={{
+            background: "linear-gradient(to top, #111827 80%, transparent)",
+          }}
+        />
+        <div className="max-w-4xl mx-auto px-4 py-4">
+          <div className="bg-gray-900/80 rounded-2xl shadow-md p-6 space-y-4">
+            {historyLoading ? (
+              <div className="flex items-center justify-center h-full">
+                <div className="text-center">
+                  <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+                  <p className="text-gray-400 text-sm">Initializing...</p>
+                </div>
               </div>
-            </div>
-          ) : (
-            <>
-              {messages.map((msg, idx) => {
-                const parts = msg.content.split(/```([\s\S]*?)```/g);
-                const messageId = `msg-${idx}`;
-                const isThinking = msg.content === "thinking" && loading;
-
-                return (
-                  <div
-                    key={idx}
-                    className={`flex ${
-                      msg.role === "user" ? "justify-end" : "justify-start"
-                    }`}
-                  >
+            ) : (
+              <>
+                {messages.map((msg, idx) => {
+                  const parts = msg.content.split(/```([\s\S]*?)```/g);
+                  const isAssistant = msg.role === "assistant";
+                  const isUser = msg.role === "user";
+                  return (
                     <div
-                      className={`max-w-[85%] p-4 rounded-2xl shadow-sm ${
-                        msg.role === "user"
-                          ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white"
-                          : "bg-gray-800 border border-gray-700 text-gray-100"
+                      key={idx}
+                      className={`flex ${
+                        isUser ? "justify-end" : "justify-start"
                       }`}
                     >
-                      {isThinking ? (
-                        <ThinkingIndicator />
-                      ) : (
-                        parts.map((part, i) =>
-                          i % 2 === 1 ? (
-                            <div key={i} className="relative group my-3">
-                              <div className="bg-gray-900 text-green-400 p-4 rounded-lg overflow-x-auto text-sm font-mono border border-gray-700">
-                                {part}
-                              </div>
-                              <button
-                                onClick={() =>
-                                  copyToClipboard(part, `${messageId}-${i}`)
-                                }
-                                className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity text-xs px-2 py-1 bg-gray-700 hover:bg-gray-600 text-white rounded"
-                                title="Copy code"
-                              >
-                                {copiedId === `${messageId}-${i}` ? (
-                                  <Check size={12} />
-                                ) : (
-                                  <Copy size={12} />
-                                )}
-                              </button>
-                            </div>
-                          ) : (
-                            <div
-                              key={i}
-                              className="whitespace-pre-wrap leading-relaxed"
+                      <div
+                        className={
+                          isUser
+                            ? "max-w-[70%] bg-gray-800 text-white rounded-2xl px-4 py-2 mb-2"
+                            : "max-w-[70%] flex items-start gap-2 mb-2"
+                        }
+                      >
+                        {isAssistant && (
+                          <span className="mt-1">
+                            {/* Gemini-style sparkle icon (SVG) */}
+                            <svg
+                              width="18"
+                              height="18"
+                              viewBox="0 0 20 20"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
                             >
-                              {parseText(part)}
-                            </div>
-                          )
-                        )
-                      )}
+                              <path
+                                d="M10 2.5L11.09 7.26C11.21 7.77 11.68 8.13 12.21 8.13H17.18L13.14 10.97C12.7 11.28 12.52 11.86 12.7 12.37L14.09 16.63L10.05 13.79C9.61 13.48 9.03 13.48 8.59 13.79L4.55 16.63L5.94 12.37C6.12 11.86 5.94 11.28 5.5 10.97L1.46 8.13H6.43C6.96 8.13 7.43 7.77 7.55 7.26L8.64 2.5H10Z"
+                                fill="#3b82f6"
+                              />
+                            </svg>
+                          </span>
+                        )}
+                        <div
+                          className={
+                            isAssistant
+                              ? "text-white whitespace-pre-wrap leading-relaxed"
+                              : "whitespace-pre-wrap leading-relaxed"
+                          }
+                        >
+                          {msg.content === "thinking" && isAssistant ? (
+                            <span className="inline-flex items-center gap-1">
+                              <span className="animate-pulse">thinking</span>
+                              <span className="block w-2 h-2 bg-blue-400 rounded-full dot-pulse opacity-70" />
+                              <span className="block w-2 h-2 bg-blue-400 rounded-full dot-pulse-delay-1 opacity-70" />
+                              <span className="block w-2 h-2 bg-blue-400 rounded-full dot-pulse-delay-2 opacity-70" />
+                            </span>
+                          ) : (
+                            parts.map((part, i) =>
+                              i % 2 === 1 ? (
+                                <div
+                                  key={i}
+                                  className="bg-gray-900 text-green-400 p-4 rounded-lg overflow-x-auto text-sm font-mono border border-gray-700 my-2"
+                                >
+                                  {part}
+                                </div>
+                              ) : (
+                                <span key={i}>{parseText(part)}</span>
+                              )
+                            )
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {/* Example Questions */}
+                {showExamples && messages.length <= 1 && (
+                  <div className="space-y-3">
+                    <p className="text-sm text-gray-400 text-center">
+                      Try asking:
+                    </p>
+                    <div className="flex flex-wrap justify-center gap-x-2 gap-y-2">
+                      {exampleQuestions.map((question, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => handleExampleClick(question)}
+                          className="px-4 py-2 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-lg transition-all duration-200 text-sm hover:border-blue-500 max-w-xs w-auto text-left"
+                        >
+                          {question}
+                        </button>
+                      ))}
                     </div>
                   </div>
-                );
-              })}
+                )}
+              </>
+            )}
 
-              {/* Example Questions */}
-              {showExamples && messages.length <= 1 && (
-                <div className="space-y-3">
-                  <p className="text-sm text-gray-400 text-center">
-                    Try asking:
-                  </p>
-                  <div className="grid grid-cols-1 gap-2">
-                    {exampleQuestions.map((question, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => handleExampleClick(question)}
-                        className="text-left p-3 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-lg transition-all duration-200 text-sm hover:border-blue-500"
-                      >
-                        {question}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </>
-          )}
-
-          <div ref={bottomRef} />
+            <div ref={bottomRef} />
+          </div>
         </div>
       </div>
 
       {/* Input Area */}
-      <div className="bg-gray-800 border-t border-gray-700">
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <div className="flex items-end space-x-3">
-            <div className="flex-1 relative">
-              <textarea
-                ref={inputRef}
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Type your message..."
-                className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-                rows={1}
-                disabled={loading || historyLoading}
-                style={{ minHeight: "44px", maxHeight: "120px" }}
-              />
-            </div>
+      <div className="w-full fixed bottom-0 left-0 bg-transparent z-20">
+        <div className="max-w-4xl mx-auto px-4 pb-4">
+          <div className="flex items-center bg-gray-800 border border-gray-700 rounded-2xl shadow-lg px-4 py-2 gap-2">
+            <textarea
+              ref={inputRef}
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Type your message..."
+              className="flex-1 bg-transparent text-white placeholder-gray-400 resize-none outline-none border-0 focus:ring-0 focus:outline-none px-0 py-4 text-base min-h-[64px] max-h-[160px] shadow-none"
+              rows={1}
+              disabled={loading || historyLoading}
+              style={{ minHeight: "64px", maxHeight: "160px" }}
+            />
             <button
               onClick={handleSend}
               disabled={loading || !input.trim() || historyLoading}
-              className={`p-3 rounded-lg transition-all duration-200 ${
+              className={`flex items-center justify-center h-10 w-10 rounded-full transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500/50 ${
                 loading || !input.trim() || historyLoading
-                  ? "bg-gray-600 cursor-not-allowed"
-                  : "bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 hover:scale-105"
+                  ? "bg-gray-700 text-gray-500 cursor-not-allowed"
+                  : "bg-blue-600 hover:bg-blue-700 text-white active:scale-95"
               }`}
               title="Send message"
             >
               {loading ? (
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
               ) : (
-                <Send size={18} className="text-white" />
+                <Send size={20} />
               )}
             </button>
           </div>
