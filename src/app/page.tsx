@@ -250,7 +250,7 @@ export default function Home() {
   return (
     <div className="flex flex-col h-screen bg-gray-900 text-white">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-800 to-gray-900 border-b border-gray-700">
+      <div className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-800 to-gray-900  ">
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
             <MessageCircle size={18} className="text-white" />
@@ -291,7 +291,7 @@ export default function Home() {
           {showProfileMenu && (
             <div
               ref={profileMenuRef}
-              className="absolute right-0 top-12 w-56 bg-gray-800 border border-gray-700 rounded-xl shadow-lg py-3 px-4 z-50 flex flex-col items-start animate-fade-in"
+              className="absolute right-0 top-12  bg-gray-800 border border-gray-700 rounded-xl shadow-lg py-3 px-4 z-50 flex flex-col items-start animate-fade-in"
               onMouseDown={(e) => e.stopPropagation()}
             >
               <div className="w-full mb-2 text-xs text-gray-400 truncate">
@@ -332,7 +332,7 @@ export default function Home() {
                   setShowExamples(true);
                   setClearLoading(false);
                 }}
-                className="text-left px-3 py-1.5 rounded-lg bg-gray-700 hover:bg-gray-600 text-xs text-gray-200 border border-gray-600 transition-all mb-2 flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                className="text-left px-3 py-1.5 w-fit rounded-lg bg-gray-700 hover:bg-gray-600 text-xs text-gray-200  transition-all mb-2 flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
                 title="Clear chat history"
                 disabled={clearLoading}
               >
@@ -347,7 +347,7 @@ export default function Home() {
                   localStorage.clear();
                   window.location.href = "/signin";
                 }}
-                className="text-left px-3 py-1.5 rounded-lg bg-gray-700 hover:bg-gray-600 text-xs text-gray-200 border border-gray-600 transition-all"
+                className="text-left w-fit px-3 py-1.5 rounded-lg bg-gray-700 hover:bg-gray-600 text-xs text-gray-200  transition-all"
                 title="Logout"
               >
                 Logout
@@ -358,16 +358,9 @@ export default function Home() {
       </div>
 
       {/* Chat Messages */}
-      <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900 pt-16 pb-40 relative">
-        {/* Fade-out gradient at bottom */}
-        <div
-          className="pointer-events-none absolute left-0 bottom-0 w-full h-24 z-10"
-          style={{
-            background: "linear-gradient(to top, #111827 80%, transparent)",
-          }}
-        />
+      <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-900 pt-16 pb-32 relative">
         <div className="max-w-4xl mx-auto px-4 py-4">
-          <div className="bg-gray-900/80 rounded-2xl shadow-md p-6 space-y-4">
+          <div className="bg-gray-900/80 rounded-2xl  p-2 space-y-4">
             {historyLoading ? (
               <div className="flex items-center justify-center h-full">
                 <div className="text-center">
@@ -391,8 +384,8 @@ export default function Home() {
                       <div
                         className={
                           isUser
-                            ? "max-w-[70%] bg-gray-800 text-white rounded-2xl px-4 py-2 mb-2"
-                            : "max-w-[70%] flex items-start gap-2 mb-2"
+                            ? "max-w-4xl bg-gray-800 text-white rounded-2xl px-4 py-2 mb-2"
+                            : "max-w-4xl flex items-start gap-2 mb-2"
                         }
                       >
                         {isAssistant && (
@@ -421,7 +414,7 @@ export default function Home() {
                         >
                           {msg.content === "thinking" && isAssistant ? (
                             <span className="inline-flex items-center gap-1">
-                              <span className="animate-pulse">thinking</span>
+                              <span className="animate-pulse">Thinking</span>
                               <span className="block w-2 h-2 bg-blue-400 rounded-full dot-pulse opacity-70" />
                               <span className="block w-2 h-2 bg-blue-400 rounded-full dot-pulse-delay-1 opacity-70" />
                               <span className="block w-2 h-2 bg-blue-400 rounded-full dot-pulse-delay-2 opacity-70" />
@@ -452,12 +445,12 @@ export default function Home() {
                     <p className="text-sm text-gray-400 text-center">
                       Try asking:
                     </p>
-                    <div className="flex flex-wrap justify-center gap-x-2 gap-y-2">
+                    <div className="flex flex-wrap justify-start gap-x-2 gap-y-2">
                       {exampleQuestions.map((question, idx) => (
                         <button
                           key={idx}
                           onClick={() => handleExampleClick(question)}
-                          className="px-4 py-2 bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-lg transition-all duration-200 text-sm hover:border-blue-500 max-w-xs w-auto text-left"
+                          className="px-4 py-2 bg-gray-800 hover:bg-gray-700   rounded-full transition-all duration-200 text-sm hover:border-blue-500 max-w-xs w-auto text-left"
                         >
                           {question}
                         </button>
@@ -476,7 +469,7 @@ export default function Home() {
       {/* Input Area */}
       <div className="w-full fixed bottom-0 left-0 bg-transparent z-20">
         <div className="max-w-4xl mx-auto px-4 pb-4">
-          <div className="flex items-center bg-gray-800 border border-gray-700 rounded-2xl shadow-lg px-4 py-2 gap-2">
+          <div className="flex items-center bg-gray-800    rounded-2xl shadow-xl px-4 py-2 gap-2">
             <textarea
               ref={inputRef}
               value={input}
