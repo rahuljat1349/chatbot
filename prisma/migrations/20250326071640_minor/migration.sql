@@ -1,5 +1,0 @@
--- AlterTable
-ALTER TABLE "Conversation" ADD COLUMN     "count" INTEGER NOT NULL DEFAULT 0;
-
--- AlterTable
-ALTER TABLE "Message" ADD COLUMN     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;

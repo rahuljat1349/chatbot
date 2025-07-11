@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "npx prisma generate && next build",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint"
   },
@@ -14,8 +14,8 @@
     "@langchain/core": "^0.3.42",
     "@langchain/mistralai": "^0.2.0",
     "@langchain/openai": "^0.4.5",
-    "@prisma/client": "^6.5.0",
     "@radix-ui/react-slot": "^1.1.2",
+    "@supabase/supabase-js": "^2.39.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "framer-motion": "^12.5.0",
@@ -33,7 +33,6 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "prisma": "^6.5.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

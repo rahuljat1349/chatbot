@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AceChat - Iframe Example</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 20px;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .container {
+        max-width: 1200px;
+        width: 100%;
+      }
+
+      .header {
+        text-align: center;
+        color: white;
+        margin-bottom: 30px;
+      }
+
+      .header h1 {
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+      }
+
+      .header p {
+        font-size: 1.2rem;
+        opacity: 0.9;
+      }
+
+      .chat-container {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        flex-wrap: wrap;
+      }
+
+      .chat-frame {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        background: #1f2937;
+        overflow: hidden;
+      }
+
+      .chat-frame.mobile {
+        width: 375px;
+        height: 600px;
+      }
+
+      .chat-frame.desktop {
+        width: 400px;
+        height: 600px;
+      }
+
+      .frame-label {
+        text-align: center;
+        color: white;
+        font-weight: 600;
+        margin-bottom: 10px;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+      }
+
+      .features {
+        margin-top: 40px;
+        text-align: center;
+        color: white;
+      }
+
+      .features h2 {
+        font-size: 1.8rem;
+        margin-bottom: 20px;
+      }
+
+      .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-top: 20px;
+      }
+
+      .feature-card {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 20px;
+        border-radius: 10px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+
+      .feature-card h3 {
+        margin-bottom: 10px;
+        color: #fbbf24;
+      }
+
+      .auth-info {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 20px;
+        border-radius: 10px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        margin-top: 20px;
+        text-align: left;
+      }
+
+      .auth-info h3 {
+        color: #fbbf24;
+        margin-bottom: 10px;
+      }
+
+      .auth-info ul {
+        list-style: none;
+        padding: 0;
+      }
+
+      .auth-info li {
+        margin-bottom: 8px;
+        padding-left: 20px;
+        position: relative;
+      }
+
+      .auth-info li:before {
+        content: "✓";
+        position: absolute;
+        left: 0;
+        color: #10b981;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>AceChat</h1>
+        <p>Rahul's Professional AI Assistant - Iframe Integration Example</p>
+      </div>
+
+      <div class="chat-container">
+        <div>
+          <div class="frame-label">Mobile View (375px × 600px)</div>
+          <iframe
+            src="http://localhost:3000"
+            class="chat-frame mobile"
+            title="AceChat Mobile"
+          ></iframe>
+        </div>
+
+        <div>
+          <div class="frame-label">Desktop View (400px × 600px)</div>
+          <iframe
+            src="http://localhost:3000"
+            class="chat-frame desktop"
+            title="AceChat Desktop"
+          ></iframe>
+        </div>
+      </div>
+
+      <div class="features">
+        <h2>Key Features</h2>
+        <div class="feature-grid">
+          <div class="feature-card">
+            <h3>🎯 Professional AI Assistant</h3>
+            <p>
+              Polite, helpful, and informative responses about Rahul's skills,
+              projects, and general topics.
+            </p>
+          </div>
+          <div class="feature-card">
+            <h3>💻 Modern UI/UX</h3>
+            <p>
+              Dark mode design with smooth animations, responsive layout, and
+              professional styling.
+            </p>
+          </div>
+          <div class="feature-card">
+            <h3>📱 Iframe Ready</h3>
+            <p>
+              Optimized for embedding in portfolio websites with proper
+              dimensions and styling.
+            </p>
+          </div>
+          <div class="feature-card">
+            <h3>🔧 Smart Features</h3>
+            <p>
+              Example questions, code copying, minimize/close functionality, and
+              real-time streaming.
+            </p>
+          </div>
+        </div>
+
+        <div class="auth-info">
+          <h3>🔐 Simple Authentication</h3>
+          <ul>
+            <li>
+              <strong>Get Started Flow:</strong> No complex login/signup - just
+              enter your email to begin
+            </li>
+            <li>
+              <strong>Email Required:</strong> Valid email address is mandatory
+              for access
+            </li>
+            <li>
+              <strong>Auto-Create Account:</strong> New users are automatically
+              registered
+            </li>
+            <li>
+              <strong>Session Management:</strong> Seamless experience with
+              persistent sessions
+            </li>
+            <li>
+              <strong>Professional Welcome:</strong> Clean, branded
+              authentication interface
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
